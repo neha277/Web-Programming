@@ -1,7 +1,6 @@
 {
-  "name": "prj1-sol",
+  "name": "prj2-sol",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "mocha test/",
@@ -17,6 +16,13 @@
     "mocha": "^10.0.0"
   },
   "dependencies": {
-    "cs544-js-utils": "file:../../../cs544/lib/cs544-js-utils"
+    "cs544-js-utils": "file:lib/cs544-js-utils",
+    "cs544-node-utils": "file:lib/cs544-node-utils",
+    "mongodb": "^4.7.0",
+    "mongodb-memory-server": "^8.7.1",
+    "mongodb-server": "^1.0.0"
+  },
+  "directories": {
+    "test": "test"
   }
 }

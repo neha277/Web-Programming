@@ -1,0 +1,19 @@
+{
+  "name": "cs544-js-utils",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.mjs",
+  "scripts": {
+    "test": "mocha test/",
+    "debug-test": "mocha --inspect-brk test/",
+    "ts-check": "tsc --build",
+    "syntax-check": "shopt -s globstar; for f in **/*.mjs; do node -c $f; done;"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0"
+  }
+}

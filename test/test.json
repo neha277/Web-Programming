@@ -1,0 +1,4 @@
+{ features: [0, 2, 54, 3, 5], label: 'a', },
+  { features: [0, 5, 10, 222, 244, 255], label: 'b', },
+  { features: [3, 3, 99, 111, 222, 0, 88, 77, ], label: 'c', },
+  { features: [], label: 'd', },
