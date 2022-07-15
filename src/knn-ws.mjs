@@ -52,6 +52,7 @@ function setupRoutes(app) {
     app.get(`${base}/check`, dummyHandler(app));
     app.post(`${base}/images`, doPostImages(app));
     app.get(`${base}/images/:id`, doGetImages(app));
+    app.get(`${base}/labels/:id/:k?`, doClassifyImages(app));
 
     //must be last
     app.use(do404(app));
@@ -92,6 +93,48 @@ function doGetImages(app) {
             const images = uint8ArrayToB64(result.val.features);
             res.status(STATUS.OK).json({ features: images, label: result.val.label });
         } catch (error) {
+            const mapped = mapResultErrors(error);
+            res.status(mapped.status).json(mapped);
+        }
+    }
+}
+
+function doClassifyImages(app) {
+    return async (req, res) => {
+        const { dao, base, k } = app.locals;
+        const id = req.params.id;
+        const kParam = req.params.k;
+        const kValue = kParam ? parseInt(kParam) : k;
+        try {
+            const result = await dao.get(id);
+            if (result.hasErrors) {
+                res.status(STATUS.NOT_FOUND).json(result);
+                return
+            }
+            const resultBuffer = Buffer.from(result.val.features);
+
+            const allTrainData = await dao.getAllTrainingFeatures();
+            const data = [];
+            for (const labeledFeatures of allTrainData.val) {
+                const { features, label } = labeledFeatures;
+                if (features.length !== result.val.features.length) {
+                    res.status(STATUS.BAD_REQUEST).json({ errors: [{ options: { code: 'BAD_FMT' } }] });
+                    return;
+                }
+
+                const trainBuffer = Buffer.from(features);
+
+                data.push({ features: trainBuffer, label });
+            }
+
+            const resultKnn = knn(resultBuffer, data, kValue);
+            const id_knn = allTrainData.val[resultKnn.val[1]];
+            res.status(STATUS.OK).json({ id: id_knn.id, label: id_knn.label });
+
+
+
+        }
+        catch (error) {
             const mapped = mapResultErrors(error);
             res.status(mapped.status).json(mapped);
         }
