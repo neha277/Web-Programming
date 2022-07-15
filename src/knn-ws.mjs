@@ -30,7 +30,7 @@ export default async function serve(knnConfig, dao, data) {
         if (data) {
             await dao.clear();
             for (const { features, label } of data) {
-                await dao.add(new Uint8Array(features), label);
+                await dao.add(new Uint8Array(features), false, label);
             }
 
         }
@@ -50,18 +50,53 @@ function setupRoutes(app) {
     app.use(cors({ exposedHeaders: 'Location' }));
     app.use(express.json({ strict: false })); //false to allow string body
     app.get(`${base}/check`, dummyHandler(app));
-    //app.use(express.text());
-
-    //uncomment to log requested URLs on server stderr
-    //app.use(doLogRequest(app));
-
-    //TODO: add knn routes here
+    app.post(`${base}/images`, doPostImages(app));
+    app.get(`${base}/images/:id`, doGetImages(app));
 
     //must be last
     app.use(do404(app));
     app.use(doErrors(app));
 }
 
+
+function doPostImages(app) {
+    return async (req, res) => {
+        const { dao, base } = app.locals;
+        const images = req.body;
+        try {
+            // convert images base64 to Uint8Array
+            const imagesUint8Array = b64ToUint8Array(images);
+            // use add method from dao to add images to db
+            const results = await dao.add(imagesUint8Array, false);
+            const location = `${base}/images/${results.val}`;
+            res.setHeader('Location', location);
+            res.status(STATUS.OK).json({ id: results.val });
+
+        } catch (error) {
+            const mapped = mapResultErrors(error);
+            res.status(mapped.status).json(mapped);
+        }
+    }
+}
+
+function doGetImages(app) {
+    return async (req, res) => {
+        const { dao, base } = app.locals;
+        const id = req.params.id;
+        try {
+            const result = await dao.get(id);
+            if (result.hasErrors) {
+                res.status(STATUS.NOT_FOUND).json(result);
+                return
+            }
+            const images = uint8ArrayToB64(result.val.features);
+            res.status(STATUS.OK).json({ features: images, label: result.val.label });
+        } catch (error) {
+            const mapped = mapResultErrors(error);
+            res.status(mapped.status).json(mapped);
+        }
+    }
+}
 
 //dummy handler to test initial routing and to use as a template
 //for real handlers.  Remove on project completion.
