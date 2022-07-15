@@ -1,88 +1,133 @@
-import { readJson, scriptName } from 'cs544-node-utils';
+import serve from './knn-ws.mjs';
+
+
 import { ok, err } from 'cs544-js-utils';
-import makeFeaturesDao from './features-dao.mjs';
+import { cwdPath } from 'cs544-node-utils';
+import { makeFeaturesDao, } from 'prj2-sol';
+import { parseImages } from 'prj1-sol';
 
+import assert from 'assert';
+import fs from 'fs';
+import https from 'https';
 import Path from 'path';
+import util from 'util';
 
-export default async function main() {
-  const args = process.argv.slice(2);
-  if (args.length < 2) {
-    usage();
-  }
-  const dbUrl = args[0];
-  const daoResult = await makeFeaturesDao(dbUrl);
-  if (daoResult.hasErrors) panic(daoResult);
-  const dao = daoResult.val;
+/**************************** main program *****************************/
+
+const FILE_NAMES = {
+  images: 'train-images-idx3-ubyte',
+  labels: 'train-labels-idx1-ubyte',
+};
+
+const MNIST_HEADERS = {
+  images: [
+    {
+      name: 'magic',
+      value: 0x803,
+    },
+    {
+      name: 'nImages',
+    },
+    {
+      name: 'nRows',
+      value: 28,
+    },
+    {
+      name: 'nCols',
+      value: 28,
+    },
+  ],
+  labels: [
+    {
+      name: 'magic',
+      value: 0x801,
+    },
+    {
+      name: 'nLabels',
+    },
+  ],
+};
+
+export default async function main(args) {
+  if (args.length !== 1 && args.length !== 2) usage();
+  const config = (await import(cwdPath(args[0]))).default;
+  const port = getPort(config.ws.port);
   try {
-    switch (args[1]) {
-      case 'add': {
-	if (args.length !== 4 && args.length !== 3) usage();
-	const dataResult = await readJson(args[2]);
-	if (dataResult.hasErrors) panic(dataResult);
-	const data = dataResult.val;
-	const dataChk = d => typeof d === 'number' && 0 <= d && d <= 255;
-	if (!(data instanceof Array) || !data.every(d => dataChk(d))) {
-	  panic(err('JSON file must contain array of byte values'));
-	}
-	const label = args[3];
-	const result = await dao.add(new Uint8Array(data), false, label);
-	if (result.hasErrors) panic(result);
-	console.log(result.val);
-	break;
-      }
-      case 'all-train': {
-	if (args.length !== 2) usage();
-	const result = await dao.getAllTrainingFeatures();
-	if (result.hasErrors) panic(result);
-	console.log(result.val);
-	break;
-      }
-      case 'clear': {
-	if (args.length !== 2) usage();
-	const result = await dao.clear();
-	if (result.hasErrors) panic(result);
-	console.log(result.val);
-	break;
-      }
-      case 'get': {
-	if (args.length !== 3) usage();
-	const id = args[2];
-	const result = await dao.get(id, false);
-	if (result.hasErrors) panic(result);
-	console.log(result.val);
-	break;
-      }
-      default:
-	usage();
+    const daoResult = await makeFeaturesDao(config.dbUrl);
+    if (daoResult.hasErrors) panic(daoResult);
+    const dao = daoResult.val;
+    let trainLabeledFeatures;
+    if (args.length === 2) {
+      const dataDir = args[1];
+      trainLabeledFeatures = await loadData(args[1], FILE_NAMES);
     }
+    const serveResult = await serve(config.knn, dao, trainLabeledFeatures);
+    if (serveResult.hasErrors) panic(serveResult);
+    const app = serveResult.val;
+    const serverOpts = {
+      key: fs.readFileSync(config.https.keyPath),
+      cert: fs.readFileSync(config.https.certPath),
+    };
+    https.createServer(serverOpts, app)
+      .listen(config.ws.port, function () {
+        console.log(`listening on port ${config.ws.port}`);
+      });
   }
-  catch (e) {
-    panic(err(e.message));
+  catch (err) {
+    console.error(err);
+    process.exit(1);
   }
   finally {
-    await dao.close();
+    //this runs even when http server still running, need to
+    //keep dao open
+    //if (dao) await dao.close();
   }
 }
 
 function usage() {
-  const prog = Path.basename(process.argv[1]);
-  panic(err(`
-    usage: ${prog} DB_URL add JSON_FEATURES_FILE [LABEL]
-     | ${prog} DB_URL all-train
-     | ${prog} DB_URL clear
-     | ${prog} DB_URL get ID
-
-    where JSON_FEATURES_FILE is the path to a JSON file containing
-    an array of byte values, LABEL is any string, and ID is the id
-    returned by a previous add command.
-      `.trim()));
+  const msg = `
+    usage: ${Path.basename(process.argv[1])} CONFIG_PATH [MNIST_DATA_DIR]
+  `.trim();
+  console.error(msg);
+  process.exit(1);
 }
 
+/**************************** Loading Data *****************************/
+
+async function loadData(dir, filePaths) {
+  const readFile = util.promisify(fs.readFile);
+  const data = {};
+  for (const t of Object.keys(filePaths)) {
+    const path = Path.join(dir, filePaths[t]);
+    try {
+      const bytes = await readFile(path);
+      data[t] = bytes;
+    }
+    catch (err) {
+      console.error(`unable to read ${path}: ${err.message}`);
+      process.exit(1);
+    }
+  }
+  const parseResult = parseImages(MNIST_HEADERS, data);
+  if (parseResult.hasErrors) panic(parseResult);
+  return parseResult.val;
+}
+
+/****************************** Utilities ******************************/
+
 function panic(errResult) {
-  console.assert(errResult.hasErrors);
+  assert(errResult.hasErrors);
   for (const err of errResult.errors) {
     console.error(err.message);
   }
   process.exit(1);
 }
 
+
+function getPort(portStr) {
+  let port;
+  if (!/^\d+$/.test(portStr) || (port = Number(portStr)) < 1024) {
+    usageError(`bad port ${portStr}: must be >= 1024`);
+  }
+  return port;
+}

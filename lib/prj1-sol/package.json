@@ -1,0 +1,22 @@
+{
+  "name": "prj1-sol",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.mjs",
+  "scripts": {
+    "test": "mocha test/",
+    "debug-test": "mocha --inspect-brk test/",
+    "syntax-check": "shopt -s globstar; for f in **/*.mjs; do node -c $f; done;"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "moch": "^0.0.1",
+    "mocha": "^10.0.0"
+  },
+  "dependencies": {
+    "cs544-js-utils": "file:../../../cs544/lib/cs544-js-utils"
+  }
+}

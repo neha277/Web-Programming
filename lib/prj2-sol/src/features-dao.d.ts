@@ -1,13 +1,17 @@
 // Result refers to Result declared in cs544-js-lib and Error Code
 // refers to AppError:options.code also declared in cs544-js-lib.
-//
+type Result<_> = { };
 
 type B64 = string;
 type Features = Uint8Array | B64;
 type Label = string;
-type LabeledFeatures = {
+interface LabeledFeatures {
   features: Features;
   label: Label;
+};
+
+interface IdLabeledFeatures extends LabeledFeatures {
+  id: string;
 };
 
 type FeaturesId = string;
@@ -47,7 +51,7 @@ interface FeaturesDao {
    *  Error Codes: 
    *    DB: a database error was encountered.
    */
-  getAllTrainingFeatures() : Promise<Result<LabeledFeatures[]>>;
+  getAllTrainingFeatures() : Promise<Result<IdLabeledFeatures[]>>;
 
   /** clear all data in this DAO.
    *
