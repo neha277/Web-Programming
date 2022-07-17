@@ -65,10 +65,7 @@ function doPostImages(app) {
         const { dao, base } = app.locals;
         const images = req.body;
         try {
-            // convert images base64 to Uint8Array
-            const imagesUint8Array = b64ToUint8Array(images);
-            // use add method from dao to add images to db
-            const results = await dao.add(imagesUint8Array, false);
+            const results = await dao.add(images, true);
             const location = `${base}/images/${results.val}`;
             res.setHeader('Location', location);
             res.status(STATUS.OK).json({ id: results.val });
