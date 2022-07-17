@@ -1,6 +1,6 @@
-Name:		Neha P Patil
-B-Number:	B00922479
-Email:		npatil9@binghamton.edu
+Name:		Neha P Patil\
+B-Number:	B00922479 \
+Email:		npatil9@binghamton.edu 
 
 install all dependecies by running following command 
 
