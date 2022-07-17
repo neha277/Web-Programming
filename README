@@ -2,16 +2,8 @@ Name:		Neha P Patil
 B-Number:	B00922479
 Email:		npatil9@binghamton.edu
 
-Following are the references 
-https://developer.mozilla.org/en-US/docs/Web/JavaScript
+install all dependecies by running following command 
 
-https://github.com/venil7/machine-learning-mnist/blob/master/src/mnist/convert.js
-
-https://liferayui.com/building-knn-algorithm/
-
-https://www.youtube.com/watch?v=vzabeKdW9tE
-
-https://github.com/vladh/clumsycomputer/tree/main/from-scratch-2-ocr
-
-https://supunkavinda.blog/js-euclidean-distance
-
+```
+npm i && npm i --prefix lib/prj1-sol && npm i --prefix lib/prj2-sol && npm i --prefix lib/cs544-node-utils && npm i --prefix lib/cs544-js-utils
+```
