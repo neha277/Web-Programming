@@ -1,8 +1,8 @@
 {
-  "name": "prj1-sol",
+  "name": "prj3-sol",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.mjs",
   "scripts": {
     "test": "mocha test/",
     "debug-test": "mocha --inspect-brk test/",
@@ -11,12 +11,22 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "cs544-js-utils": "file:lib/cs544-js-utils",
+    "cs544-node-utils": "file:lib/cs544-node-utils",
+    "express": "^4.18.1",
+    "http-status": "^1.5.2",
+    "mongodb": "^4.7.0",
+    "prj1-sol": "file:lib/prj1-sol",
+    "prj2-sol": "file:lib/prj2-sol",
+    "supertest": "^6.2.4"
+  },
   "devDependencies": {
     "chai": "^4.3.6",
-    "moch": "^0.0.1",
-    "mocha": "^10.0.0"
-  },
-  "dependencies": {
-    "cs544-js-utils": "file:../../../cs544/lib/cs544-js-utils"
+    "mocha": "^10.0.0",
+    "mongodb-memory-server": "^8.7.0",
+    "nodemon": "^2.0.19"
   }
 }

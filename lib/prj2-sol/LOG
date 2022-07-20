@@ -1,0 +1,70 @@
+# usage message
+$ ./index.mjs 
+usage: index.mjs DB_URL add JSON_FEATURES_FILE [LABEL]
+     | index.mjs DB_URL all-train
+     | index.mjs DB_URL clear
+     | index.mjs DB_URL get ID
+
+    where JSON_FEATURES_FILE is the path to a JSON file containing
+    an array of byte values, LABEL is any string, and ID is the id
+    returned by a previous add command.
+
+# add features1.json as training feature with label 1
+$ ./index.mjs mongodb://localhost:27017/knn add features1.json 1
+a-2b0c7de4c911d8ea20ce7a6bd7612a0d
+
+# add features2.json as training feature with label 2
+$ ./index.mjs mongodb://localhost:27017/knn add features2.json 2
+a-f7ae8c9d22ab2b30b5c3385ff351ef88
+
+# add features2.json as test feature
+$ ./index.mjs mongodb://localhost:27017/knn add features2.json 
+b-99ac7f99a772592ab9fc6a1b9baaddcc
+
+# add features1.json as test feature
+$ ./index.mjs mongodb://localhost:27017/knn add features1.json 
+b-8241fba54e1671f027f2352474495124
+
+# return features1.json test feature.  Note that it is only necessary to
+# provide unique prefix of id.
+$ ./index.mjs mongodb://localhost:27017/knn get b-8241
+{ features: Uint8Array(5) [ 1, 2, 3, 4, 255 ], label: null }
+
+# retrieve features2.json training feature
+$ ./index.mjs mongodb://localhost:27017/knn get a-f7ae
+{
+  features: Uint8Array(19) [
+    1, 1,  1,   2,   3,  3, 3,
+    5, 5, 67, 255,   7, 12, 3,
+    1, 1,  3,   5, 223
+  ],
+  label: '2'
+}
+
+# retrieve all training features
+$ ./index.mjs mongodb://localhost:27017/knn all-train
+[
+  {
+    id: 'a-2b0c7de4c911d8ea20ce7a6bd7612a0d',
+    label: '1',
+    features: Uint8Array(5) [ 1, 2, 3, 4, 255 ]
+  },
+  {
+    id: 'a-f7ae8c9d22ab2b30b5c3385ff351ef88',
+    label: '2',
+    features: Uint8Array(19) [
+      1, 1,  1,   2,   3,  3, 3,
+      5, 5, 67, 255,   7, 12, 3,
+      1, 1,  3,   5, 223
+    ]
+  }
+]
+
+# clear db
+$ ./index.mjs mongodb://localhost:27017/knn clear
+undefined
+
+# previously acccessible features are no long available
+$ ./index.mjs mongodb://localhost:27017/knn get a-f7ae
+no features for a-f7ae
+$ 
