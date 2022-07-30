@@ -6,7 +6,7 @@ export default function makeKnnWsClient(wsUrl) {
 
 class KnnWsClient {
   constructor(wsUrl) {
-    //TODO
+    this.wsUrl = wsUrl;
   }
 
   /** Given a base64 encoding b64Img of an MNIST compatible test
@@ -21,7 +21,23 @@ class KnnWsClient {
    *  error Result.
    */
   async classify(b64Img) {
-    //TODO
+    try {
+      const res = await fetch(this.wsUrl + '/knn/images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(b64Img)
+      });
+      const json = await res.json();
+      if (json.errors) {
+        return this.wsError(json);
+      }
+      return ok(json);
+    }
+    catch (e) {
+      return err(e);
+    }
   }
 
   /** Return a Result containing the base-64 representation of
@@ -38,7 +54,17 @@ class KnnWsClient {
    *  error Result.
    */
   async getImage(imageId) {
-    //TODO
+    try {
+      const res = await fetch(this.wsUrl + '/knn/labels/' + imageId);
+      const json = await res.json();
+      if (json.errors) {
+        return this.wsError(json);
+      }
+      return ok(json);
+    }
+    catch (e) {
+      return err(e);
+    }
   }
 
   /** convert an erroneous JSON web service response to an error Result. */
