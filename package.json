@@ -1,32 +1,23 @@
 {
-  "name": "prj3-sol",
+  "name": "prj4-sol",
   "version": "1.0.0",
   "description": "",
   "main": "main.mjs",
   "scripts": {
-    "test": "mocha test/",
-    "debug-test": "mocha --inspect-brk test/",
+    "start": "parcel src/index.html  --port 2346",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "syntax-check": "shopt -s globstar; for f in **/*.mjs; do node -c $f; done;"
   },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "maintained node versions"
+  ],
   "keywords": [],
-  "author": "",
+  "author": "Neha Patil",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.20.0",
-    "cors": "^2.8.5",
     "cs544-js-utils": "file:lib/cs544-js-utils",
-    "cs544-node-utils": "file:lib/cs544-node-utils",
-    "express": "^4.18.1",
-    "http-status": "^1.5.2",
-    "mongodb": "^4.7.0",
-    "prj1-sol": "file:lib/prj1-sol",
-    "prj2-sol": "file:lib/prj2-sol",
-    "supertest": "^6.2.4"
-  },
-  "devDependencies": {
-    "chai": "^4.3.6",
-    "mocha": "^10.0.0",
-    "mongodb-memory-server": "^8.7.0",
-    "nodemon": "^2.0.19"
+    "parcel-bundler": "^1.12.5"
   }
 }
